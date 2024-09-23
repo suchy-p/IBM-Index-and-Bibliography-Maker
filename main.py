@@ -48,6 +48,7 @@ class App(tk.Tk):
         self.page_num = 0
         self.bibliography = list()
         self.index = defaultdict(set)
+        self.matcher = Matcher(self.secondary_nlp.vocab)
 
     def create_index(self, file_path):
 
@@ -73,29 +74,31 @@ class App(tk.Tk):
         self.page_num = 0
         view.lbl3.config(text='Index file saved in pdf directory')
 
-    def create_bibliography(self, index, file_path):
+    def create_bibliography(self, index, file_path, app):
         index = self.index
         reader = PdfReader(file_path)
 
-        if self.index_ready == False:
-            app.thread1
-            app.thread2
+        if not self.index_ready:
+            self.thread1
+            self.thread2
         else:
-            matcher = Matcher(self.secondary_nlp.vocab)
+            #self.matcher = Matcher(self.secondary_nlp.vocab)
 
             pattern = [
                 {"ENT_TYPE": "placeName"},
                 {"ENT_TYPE": "date"}
             ]
 
-            matcher.add("adress_ending_pattern", [pattern])
+            self.matcher.add("address_ending_pattern", [pattern])
             #funcs.add_matcher_pattern()
 
             for key in sorted(index.keys()):
+                current_page = reader.pages[self.page_num]
                 surname = key.split()[0]
-                funcs.add_to_bibliography(key, surname)
+                self.bibliography.extend(funcs.add_to_bibliography(key, surname, current_page, self.secondary_nlp))
+                print(self.bibliography)
 
-        funcs.write_bibliography_output(bibliography)
+        funcs.write_bibliography_output(self.bibliography)
         view.lbl3.config(text='Bibliography file saved in pdf directory')
 
     def get_file_path(self, label):
@@ -112,7 +115,7 @@ class App(tk.Tk):
         t1.start()
 
     def thread2(self, func):
-        t2 = Thread(target=self.create_bibliography(self.index))
+        t2 = Thread(target=self.create_bibliography(self.index, view.lbl2.cget('text'), self.secondary_nlp))
         t2.start()
 
 class View:

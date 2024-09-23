@@ -1,4 +1,8 @@
 import re
+
+import main
+
+
 #from spacy.matcher import Matcher
 
 # delete, moved to main
@@ -79,17 +83,21 @@ def add_person(doc, secondary_nlp):
                 reader.get_page_number(current_page))
                 '''
 
-def add_to_bibliography(key, name):
+def add_to_bibliography(key, name, current_page, secondary_nlp):
     pattern = name
     monography = rf"{pattern}[,]\s\D+[,].+\d+"
     search = re.findall(monography, current_page.extract_text())
+    bibliography_from_page = list()
+    secondary_nlp = secondary_nlp
 
     for item in search:
         if item[0].isupper():
             trimmed = trimmer_bibliography(item)
             no_line_breaks = remove_line_breaking(trimmed)
 
-            bibliography.append(no_line_breaks.replace(pattern, key))
+            bibliography_from_page.append(no_line_breaks.replace(pattern, key))
+
+    return bibliography_from_page
 
 # remove line breaking
 def remove_line_breaking(item):
@@ -104,9 +112,10 @@ def remove_line_breaking(item):
     return no_line_breaks
 
 def trimmer_bibliography(i):
+
     # doc of given bibliohraphical address, both eng (doc1) and pl (doc2) pipelines
     # doc1 = primary_nlp(i)
-    doc2 = secondary_nlp(i)
+    doc2 = getattr(main.app, 'secondary_nlp')(i)
 
     # index of place and year of publication
     # eveything after this should be removed
@@ -114,7 +123,7 @@ def trimmer_bibliography(i):
     place_and_year_index = int()
     # reference_text =
 
-    matches = matcher(doc2)
+    matches = getattr(main.app, 'matcher')(doc2)
 
     if len(matches) > 0:
         # get ending index of place and year of publication
@@ -146,8 +155,10 @@ def trimmer_index(item):
     return trimmed_item
 
 def write_bibliography_output(bibliography):
-    with open ("bibliography_output.doc","w", encoding="utf-8" ) as file:
-        for item in sorted(set(bibliography)):
+    output = sorted(set(bibliography))
+    #with open ("bibliography_output.doc","w", encoding="utf-8" ) as file:
+    with open("bibliography_output.txt", "w", encoding="utf-8") as file:
+        for item in output:
             file.write(item+"\n")
 
 def write_index_output(index):
