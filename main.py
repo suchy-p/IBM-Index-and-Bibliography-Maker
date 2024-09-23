@@ -18,31 +18,35 @@ import funcs
 
 # primary nlp object,
 # "trf" = eng pipeline with highest accuracy for searching for entities
-primary_nlp = spacy.load('en_core_web_trf')               #load("en_core_web_trf"))
+               #load("en_core_web_trf"))
 
 # secondary nlp object,
 # for lemmatization of entities
 # eng pipeline can't handle declension in pl
-secondary_nlp = spacy.load('pl_core_news_lg')
+
 
 # index; defaultdict, ent.label == PERSON from doc as key,
 # set of pages as default value
 
 
 # if index_ready == True bibliography can be made
-index_ready = False
+
 
 # list for bibliography, later sorted for output
-bibliography = list()
+
 
 # tkinter object
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.geometry('400x200')
+        self.index_ready = False
+        self.primary_nlp = spacy.load('en_core_web_trf')
+        self.secondary_nlp = spacy.load('pl_core_news_lg')
         self.resizable(False, False)
         self.title('IBM')
         self.page_num = 0
+        self.bibliography = list()
         self.index = defaultdict(set)
 
     def create_index(self, file_path):
@@ -53,24 +57,39 @@ class App(tk.Tk):
         for page in reader.pages:
             view.lbl3.config(text=f'Indexing page: '
                                   f'{self.page_num + 1}')
+            view.lbl3.grid(column=0, columnspan=3, row=4, pady=5)
             current_page = reader.pages[self.page_num]
-            doc = primary_nlp(current_page.extract_text())
-            funcs.add_person(doc, secondary_nlp)
+            doc = self.primary_nlp(current_page.extract_text())
+            names_on_page = funcs.add_person(doc, self.secondary_nlp)
+            print(names_on_page)
+            for name in names_on_page:
+                self.index[name].add(self.page_num+1)
+
 
             self.page_num += 1
 
         funcs.write_index_output(self.index)
-        index_ready = True
+        self.index_ready = True
         self.page_num = 0
         view.lbl3.config(text='Index file saved in pdf directory')
 
-    def create_bibliography(self, index):
+    def create_bibliography(self, index, file_path):
+        index = self.index
+        reader = PdfReader(file_path)
 
-        if index_ready == False:
-            self.create_index()
-            self.create_bibliography()
+        if self.index_ready == False:
+            app.thread1
+            app.thread2
         else:
-            funcs.add_matcher_pattern()
+            matcher = Matcher(self.secondary_nlp.vocab)
+
+            pattern = [
+                {"ENT_TYPE": "placeName"},
+                {"ENT_TYPE": "date"}
+            ]
+
+            matcher.add("adress_ending_pattern", [pattern])
+            #funcs.add_matcher_pattern()
 
             for key in sorted(index.keys()):
                 surname = key.split()[0]
@@ -84,7 +103,7 @@ class App(tk.Tk):
         file_path = os.path.abspath(file.name)
         os.chdir(os.path.dirname(file_path))
         view.lbl2.config(text=file_path)
-        index_ready = False
+        #index_ready = False
 
         return file_path
 
@@ -93,7 +112,7 @@ class App(tk.Tk):
         t1.start()
 
     def thread2(self, func):
-        t2 = Thread(target=self.create_bibliography)
+        t2 = Thread(target=self.create_bibliography(self.index))
         t2.start()
 
 class View:

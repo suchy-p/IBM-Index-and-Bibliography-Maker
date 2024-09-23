@@ -1,6 +1,7 @@
 import re
+#from spacy.matcher import Matcher
 
-
+# delete, moved to main
 def add_matcher_pattern():
     matcher = Matcher(secondary_nlp.vocab)
 
@@ -42,9 +43,10 @@ def add_person(doc, secondary_nlp):
             # create list in this func, then return list from func and add
             # all elements to index, current page as value still should be
             # valid
-            #name_list.append(trimmed_surname.title())
-            self.index[trimmed_surname.title()].add(
-                reader.get_page_number(current_page))
+            name_list.append(trimmed_surname.title())
+            #self.index[trimmed_surname.title()].add(
+            #    reader.get_page_number(current_page))
+    return name_list
 
 
 '''def add_person():
@@ -149,7 +151,8 @@ def write_bibliography_output(bibliography):
             file.write(item+"\n")
 
 def write_index_output(index):
-    with open ("index_output.doc","w", encoding="utf-8" ) as file:
+    with open("index_output.", "w", encoding="utf-8") as file:
+    #with open ("index_output.doc","w", encoding="utf-8" ) as file:
         for key, subdict in sorted(index.items()):
             # pages for given person, set from "index" dict joined into string
             pages = ", ".join([str(value) for value in sorted(subdict)])
