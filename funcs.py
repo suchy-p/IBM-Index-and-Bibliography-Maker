@@ -1,8 +1,5 @@
 import re
 
-import main
-
-
 #from spacy.matcher import Matcher
 
 # delete, moved to main
@@ -83,16 +80,17 @@ def add_person(doc, secondary_nlp):
                 reader.get_page_number(current_page))
                 '''
 
-def add_to_bibliography(key, name, current_page, secondary_nlp):
+def add_to_bibliography(key, name, current_page, secondary_nlp, matcher):
     pattern = name
     monography = rf"{pattern}[,]\s\D+[,].+\d+"
     search = re.findall(monography, current_page.extract_text())
     bibliography_from_page = list()
     secondary_nlp = secondary_nlp
+    matcher = matcher
 
     for item in search:
         if item[0].isupper():
-            trimmed = trimmer_bibliography(item)
+            trimmed = trimmer_bibliography(item, secondary_nlp, matcher)
             no_line_breaks = remove_line_breaking(trimmed)
 
             bibliography_from_page.append(no_line_breaks.replace(pattern, key))
@@ -111,19 +109,22 @@ def remove_line_breaking(item):
 
     return no_line_breaks
 
-def trimmer_bibliography(i):
+def trimmer_bibliography(i, secondary_nlp, matcher):
 
     # doc of given bibliohraphical address, both eng (doc1) and pl (doc2) pipelines
     # doc1 = primary_nlp(i)
-    doc2 = getattr(main.app, 'secondary_nlp')(i)
-
+    #doc2 = getattr(main.App, 'secondary_nlp')(i)
+    #secondary_nlp = main.app.secondary_nlp#getattr(main.app, 'secondary_nlp')
+    doc2 = secondary_nlp(i)
     # index of place and year of publication
     # eveything after this should be removed
     # [author, title, year and place of publication]
     place_and_year_index = int()
     # reference_text =
 
-    matches = getattr(main.app, 'matcher')(doc2)
+    #matches = getattr(main.App, 'matcher')(doc2)
+    #matcher = main.app.matcher#getattr(main.App, 'matcher')
+    matches = matcher(doc2)
 
     if len(matches) > 0:
         # get ending index of place and year of publication
@@ -162,7 +163,7 @@ def write_bibliography_output(bibliography):
             file.write(item+"\n")
 
 def write_index_output(index):
-    with open("index_output.", "w", encoding="utf-8") as file:
+    with open("index_output.txt", "w", encoding="utf-8") as file:
     #with open ("index_output.doc","w", encoding="utf-8" ) as file:
         for key, subdict in sorted(index.items()):
             # pages for given person, set from "index" dict joined into string
@@ -173,4 +174,4 @@ def write_index_output(index):
             file.write("\n")
 
 if __name__ == '__main__':
-    main()
+    app.mainloop()
