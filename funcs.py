@@ -89,7 +89,8 @@ def trimmer_bibliography(item: str, secondary_nlp: spacy.Language, matcher: spac
             # trimming bibliographical address, converting doc obj to str
             trimmed = doc[0: place_and_year_index].text + "."
     else:
-        # '\033[1m' + [...] + '\033[0m' spanning for bold text
+        # if given string doesn't end with predicted pattern (place, year) mark for checkup
+        # '\033[1m' + [...] + '\033[0m' spanning for bold text in terminal
         trimmed = doc[0::].text + '\033[1m' + '\t <<< \t check required' + '\033[0m'
 
     return trimmed
