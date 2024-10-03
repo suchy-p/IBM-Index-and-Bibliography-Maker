@@ -1,16 +1,14 @@
-from collections import defaultdict
 import os
-from threading import Thread
 import tkinter as tk
-from tkinter import filedialog as fd
 import tkinter.ttk as ttk
-from tkinter.constants import CENTER
+from collections import defaultdict
+from threading import Thread
+from tkinter import filedialog as fd
 
+import en_core_web_trf
+import pl_core_news_lg
 from PyPDF2 import PdfReader
-import spacy
-from click import command
 from spacy.matcher import Matcher
-from typer.cli import state
 
 import funcs
 
@@ -18,14 +16,16 @@ import funcs
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry('400x225')
+        self.geometry('400x250')
         self.resizable(False, False)
         self.title('IBM')
-
-        # primary nlp object, "trf" = eng pipeline with the best accuracy for searching for entities
-        self.primary_nlp = spacy.load('en_core_web_trf')
-        # secondary nlp object for lemmatization of entities; eng pipeline can't handle declension in pl
-        self.secondary_nlp = spacy.load('pl_core_news_lg')
+        # primary nlp object, "trf" = eng model with the best accuracy for searching for entities
+        # self.primary_nlp = spacy.load('en_core_web_trf')
+        # both models imported as modules for compilation via nuitka
+        self.primary_nlp = en_core_web_trf.load()
+        # secondary nlp object for lemmatization of entities; eng model can't handle declension in pl
+        #self.secondary_nlp = spacy.load('pl_core_news_lg')
+        self.secondary_nlp = pl_core_news_lg.load()
         # matcher for bibliography, more in 'create_bibliography'
         self.matcher = Matcher(self.secondary_nlp.vocab)
 
@@ -37,27 +37,27 @@ class App(tk.Tk):
         # if index_ready == True bibliography can be made
         self.index_ready = False
         # num of analyzed page in reader object
-        self.page_num = 0
-
+        #self.page_num = 0
+        self.page_num = tk.IntVar(value=0)
 
     def create_index(self, file_path):
 
         reader = PdfReader(file_path)
 
         for page in reader.pages:
-
-            current_page = reader.pages[self.page_num]
+            view.main_lbl3.config(text=f'Creating personal index.\n'
+                                       f'Current page: {self.page_num.get() + 1} of {len(reader.pages)}')
+            current_page = reader.pages[self.page_num.get()]
             doc = self.primary_nlp(current_page.extract_text())
             names_on_page = funcs.add_person(doc, self.secondary_nlp)
 
             for name in names_on_page:
-                self.index[name].add(self.page_num+1)
-
-            self.page_num += 1
+                self.index[name].add(self.page_num.get()+1)
+            self.page_num.set(self.page_num.get()+ 1)
 
         funcs.write_index_output(self.index)
         self.index_ready = True
-        self.page_num = 0
+        self.page_num.set(0)
         self.enable_buttons()
         view.main_lbl3.config(text='Index file saved in pdf directory')
 
@@ -76,20 +76,21 @@ class App(tk.Tk):
         self.matcher.add("address_ending_pattern", [pattern])
 
         for page in reader.pages:
+            view.main_lbl3.config(text=f'Creating bibliography from personal index.\n'
+                                       f'Current page: {self.page_num.get() + 1} of {len(reader.pages)}')
             # indexed names (keys) are used to search for publications on each page
             for key in sorted(index.keys()):
 
-                current_page = reader.pages[self.page_num]
+                current_page = reader.pages[self.page_num.get()]
                 # split indexed name, use surname only for publications search
                 surname = key.split()[0]
                 self.bibliography.extend(funcs.add_to_bibliography
                                          (key, surname, current_page, self.secondary_nlp, self.matcher))
-            self.page_num += 1
+            self.page_num.set(self.page_num.get()+1)
 
         funcs.write_bibliography_output(self.bibliography)
         self.enable_buttons()
         view.main_lbl3.configure(text='Bibliography file saved in pdf directory')
-
 
     def disable_buttons(self):
         view.bibliography_button.config(state='disabled')
@@ -97,13 +98,11 @@ class App(tk.Tk):
         view.select_button.config(state='disabled')
         view.tab_control.tab(1, state='disabled')
 
-
     def enable_buttons(self):
         view.bibliography_button.config(state='normal')
         view.index_button.config(state='normal')
         view.select_button.config(state='normal')
         view.tab_control.tab(1, state='normal')
-
 
     def get_file_path(self):#, label):
         file = fd.askopenfile(mode='r', filetypes=[('Pdf files','*.pdf')])
@@ -116,25 +115,19 @@ class App(tk.Tk):
         view.bibliography_button.configure(state='disabled')
         return file_path
 
-
     def thread1(self):#, func):
         t1 = Thread(target=self.index_run)
         t1.start()
 
-
     def index_run(self):
-        view.main_lbl3.config(text='Creating personal index')
         self.disable_buttons()
         self.create_index(view.main_lbl2.cget('text'))
-
 
     def thread2(self):#, func):
         t2 = Thread(target=self.bibliography_run)
         t2.start()
 
-
     def bibliography_run(self):
-        view.main_lbl3.config(text='Creating bibliography from personal index')
         self.disable_buttons()
         self.create_bibliography(view.main_lbl2.cget('text'))
 
@@ -143,12 +136,9 @@ class View:
     # tkinter view object
     def __init__(self):
         self.tab_control = ttk.Notebook(app)
+
         self.main_tab = ttk.Frame(self.tab_control)
-
-        #self.main_frame = tk.Frame(self.main_tab)
-        #self.custom_frame = tk.Frame(self.custom_tab)
         self.main_frame1 = tk.LabelFrame(self.main_tab, width=355)
-
         self.main_lbl1 = tk.Label(self.main_tab, text='Select pdf file')
         self.main_lbl2 = tk.Label(self.main_frame1, text='No file selected', anchor='center')
         self.main_lbl3 = tk.Label(self.main_tab)
@@ -163,7 +153,6 @@ class View:
                                                                  'Currently under construction')
 
 
-
 app = App()
 view = View()
 
@@ -176,10 +165,8 @@ view.main_lbl2.pack()
 view.main_frame1.grid(column=0, columnspan=2, row=2, rowspan=2, padx=10, pady=15, sticky='ew')
 
 view.index_button.grid(column=0, row=4, pady=5)
-#view.index_button.bind('<Button-1>', app.thread1)
 
 view.bibliography_button.grid(column=1, row=4, pady=5)
-#view.bibliography_button.bind('<Button-1>', app.thread2)
 
 # output text messages
 view.main_lbl3.grid(column=0, columnspan=2, row=5, pady=10)
@@ -193,7 +180,7 @@ view.main_tab.columnconfigure(0, weight=1)
 view.main_tab.columnconfigure(1, weight=1)
 
 # custom_tab
-view.custom_output_info.pack(anchor=CENTER, pady=65)
+view.custom_output_info.pack(anchor=tk.CENTER, pady=65)
 
 view.tab_control.add(view.main_tab, text='Main')
 view.tab_control.add(view.custom_tab, text='Custom')

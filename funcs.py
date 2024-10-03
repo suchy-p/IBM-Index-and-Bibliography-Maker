@@ -2,7 +2,6 @@ import re
 
 import PyPDF2
 import spacy
-from pygments.lexer import default
 from spacy.matcher import Matcher
 from spacy.pipeline.dep_parser import defaultdict
 from spacy.tokens import Span
@@ -106,14 +105,12 @@ def trimmer_index(item: list[str]) -> str:
 
     return trimmed_item
 
-
 def write_bibliography_output(bibliography: list[str]):
     output = sorted(set(bibliography))
     #with open ("bibliography_output.doc","w", encoding="utf-8" ) as file:
     with open("bibliography_output.txt", "w", encoding="utf-8") as file:
         for item in output:
             file.write(item+"\n")
-
 
 def write_index_output(index: defaultdict[str|set]):
     with open("index_output.txt", "w", encoding="utf-8") as file:
