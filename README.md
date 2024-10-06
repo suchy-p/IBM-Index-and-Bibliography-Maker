@@ -24,6 +24,6 @@ More important, you should check your output files, they will be in need of your
 Basic idea was that you could run IBM on your office PC using exe file. Unfortunately, looks like PyInstaller (ver. 6.10.0) won't do. There are some issues with transformer based models, PyInstaller seems to ignore transformer files. From my research looks like I wasn't only one who run on this problem. 
 Alternatviely you could use Nuitka (ver. 2.4.8). '--follow-imports' works fine, but requires Python installed. Still trying to work out proper '--standalone'.
 
-
-
-rework bibliography search using pages from index
+## Upcoming changes
+Right now I'm working to add custom created indexes. Main idea is that you could load file with list of items you want indexed, for instance geographical locations, to create any index you need, in this case geographical index. If such list of items for indexation is created during editorial works, custom index could save a lot of work later.
+Later I think of reworking bibliography search. Right now it's rather poorly optimised, looking for every surname on every page. I intend to use pages from index as guidelines where to look for what and see how that works out. 
