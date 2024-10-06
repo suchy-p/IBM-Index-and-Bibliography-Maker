@@ -17,7 +17,7 @@ Found entity is then lemmatized by polish model, because english model isn't ver
 
 Bibliography creation is based on index. Basically, surnames are searched for in pdf. When found, regex pattern is used to check if next to surname is a bibliographic address. Next it is trimmed down from any unwanted text. Saved as list, sorted is written as doc file for output in selected pdf file directory.
 ## How to handle it
-IBM was made to be easy to use. You have only few buttons, none of them is usable when you are not allowed to.
+IBM was made to be easy to use. You have only few buttons, none of them is usable when you are not allowed to. GUI was made with tkinter.
 More important, you should check your output files, they will be in need of your attention. Aside from my mistakes or disputable choices, used models will make errors.
 
 ## Deployment
