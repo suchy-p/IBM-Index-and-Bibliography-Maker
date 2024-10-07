@@ -22,7 +22,10 @@ More important, you should check your output files, they will be in need of your
 
 ## Deployment
 Basic idea was that you could run IBM on your office PC using exe file. Unfortunately, looks like PyInstaller (ver. 6.10.0) won't do. There are some issues with transformer based models, PyInstaller seems to ignore transformer files. From my research looks like I wasn't only one who run on this problem. 
-Alternatviely you could use Nuitka (ver. 2.4.8). '--follow-imports' works fine, but requires Python installed. Still trying to work out proper '--standalone'.
+Alternatviely you could use Nuitka (ver. 2.4.8). Command line options which worked for me:
+```
+python -m nuitka --enable-plugin=tk-inter --spacy-language-model=all --include-package=curated_transformers --include-package=spacy_curated_transformers --include-package=spacy_alignments --include-distribution-metadata=spacy --standalone main.py
+```
 
 ## Upcoming changes
 Right now I'm working to add custom created indexes. Main idea is that you could load file with list of items you want indexed, for instance geographical locations, to create any index you need, in this case geographical index. If such list of items for indexation is created during editorial works, custom index could save a lot of work later.
