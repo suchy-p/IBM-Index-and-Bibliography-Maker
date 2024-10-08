@@ -26,6 +26,10 @@ Alternatviely you could use Nuitka (ver. 2.4.8). Command line options which work
 ```
 python -m nuitka --enable-plugin=tk-inter --spacy-language-model=all --include-package=curated_transformers --include-package=spacy_curated_transformers --include-package=spacy_alignments --include-distribution-metadata=spacy --standalone main.py
 ```
+## Known bugs
+- Creating bibliography for larger files ends with End of Index Error: main.py line 88.
+- Name reversing in index often doesn't work as intended.
+- Clicking 'Create bibliography' after generating it for first time doesn't run from index 0 but last index + 1 and freezes
 
 ## Upcoming changes
 Right now I'm working to add custom created indexes. Main idea is that you could load file with list of items you want indexed, for instance geographical locations, to create any index you need, in this case geographical index. If such list of items for indexation is created during editorial works, custom index could save a lot of work later.
