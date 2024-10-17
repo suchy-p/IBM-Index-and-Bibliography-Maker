@@ -27,7 +27,7 @@ two_names_males = list()
 def create_two_names(first_names, two_names):
     temp_names = list()
     for name in first_names[:len(first_names)//2]:
-        temp_names.append(name.replace('\n',' ')) if len(temp_names) < 2 else two_names.append(temp_names.pop(0) + temp_names.pop()[:-1:])    
+        temp_names.append(name.replace('\n',' ')) if len(temp_names) < 2 else two_names.append(temp_names.pop(0) + temp_names.pop())    
 
 # %% ../name_surname_join_from_dataset.ipynb 17
 def random_name_surname (names, surnames, randomized):
