@@ -22,8 +22,9 @@ IBM was made to be easy to use. You have only few buttons, none of them is usabl
 More important, you should check your output files, they will be in need of your attention. Aside from my mistakes or disputable choices, used models will make errors.
 
 ## Deployment
-Basic idea was that you could run IBM on your office PC using exe file. Unfortunately, looks like PyInstaller (ver. 6.10.0) won't do. There are some issues with transformer based models, PyInstaller seems to ignore transformer files. From my research looks like I wasn't only one who run on this problem. 
-Alternatviely you could use Nuitka (ver. 2.4.8). Command line options which worked for me:
+Basic idea was that you could run IBM on your office PC using exe file. Unfortunately, looks like PyInstaller (ver. 6.10.0) won't do. There are some issues with transformer based models, PyInstaller seems to ignore transformer files. As far as I know I wasn't only one who run on this problem and it still has to be solved. 
+
+Nuitka (ver. 2.4.8) works fine. Command line:
 ```
 python -m nuitka --enable-plugin=tk-inter --spacy-language-model=all --include-package=curated_transformers --include-package=spacy_curated_transformers --include-package=spacy_alignments --include-distribution-metadata=spacy --standalone main.py
 ```
